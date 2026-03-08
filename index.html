@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Para ti, Nayeli...</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Montserrat:wght@300;400;500&display=swap');
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #0d0d12;
+            color: #e0e0e0;
+            font-family: 'Montserrat', sans-serif;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* --- ESCENA 1: LA VELA --- */
+        #candle-scene {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+            transition: opacity 1.5s ease, visibility 1.5s;
+            background: radial-gradient(circle at center, #1a1a24 0%, #050508 100%);
+        }
+
+        .instruction {
+            margin-bottom: 50px;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.4rem;
+            color: #a0a0b5;
+            text-align: center;
+            opacity: 0.8;
+            padding: 0 20px;
+        }
+
+        .candle-container {
+            position: relative;
+            width: 60px;
+            height: 150px;
+            cursor: pointer;
+        }
+
+        .candle-body {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 120px;
+            background: linear-gradient(to right, #e8e8e8, #f5f5f5, #d4d4d4);
+            border-radius: 3px;
+            box-shadow: inset 0 -10px 10px rgba(0,0,0,0.1);
+        }
+
+        .wick {
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 15px;
+            background: #222;
+            border-radius: 2px;
+        }
+
+        .flame {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 24px;
+            height: 40px;
+            background: radial-gradient(ellipse at bottom, #fff 10%, #ffeb3b 40%, #ff9800 80%, rgba(255, 152, 0, 0) 100%);
+            border-radius: 50% 50% 20% 20%;
+            box-shadow: 0 -10px 40px 10px rgba(255, 152, 0, 0.6);
+            animation: flicker 0.1s infinite alternate;
+            transition: all 0.5s ease;
+        }
+
+        .flame.blown-out {
+            opacity: 0;
+            transform: translateX(-50%) scale(0.1);
+        }
+
+        .smoke {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            width: 10px;
+            height: 10px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 50%;
+            opacity: 0;
+            transform: translateX(-50%);
+        }
+
+        .smoke.active {
+            animation: smokeRise 3s ease-out forwards;
+        }
+
+        @keyframes flicker {
+            0% { transform: translateX(-50%) scale(1) rotate(-1deg); }
+            100% { transform: translateX(-50%) scale(1.05) rotate(1deg); }
+        }
+
+        @keyframes smokeRise {
+            0% { opacity: 0.8; transform: translateX(-50%) translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateX(-80%) translateY(-100px) scale(5); }
+        }
+
+        /* --- ESCENA 2: CARTAS DESLIZABLES --- */
+        #cards-scene {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 1.5s ease 1s;
+        }
+
+        .card-stack {
+            position: relative;
+            width: 85%;
+            max-width: 380px;
+            height: 500px;
+        }
+
+        .card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #1e1e28;
+            border-radius: 15px;
+            padding: 35px 25px;
+            box-sizing: border-box;
+            box-shadow: -5px 5px 20px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            text-align: left;
+            transition: transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.6s ease;
+            cursor: pointer;
+            border: 1px solid #2a2a36;
+        }
+
+        .card:nth-child(1) { z-index: 4; transform: rotate(0deg); }
+        .card:nth-child(2) { z-index: 3; transform: rotate(1.5deg) translateX(4px); }
+        .card:nth-child(3) { z-index: 2; transform: rotate(-1.5deg) translateX(-4px); }
+        .card:nth-child(4) { z-index: 1; transform: rotate(1deg) translateX(2px); }
+
+        .card.swiped {
+            transform: translateX(-150%) rotate(-15deg) !important;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .card p {
+            font-size: 1.05rem;
+            line-height: 1.6;
+            color: #c4c4d4;
+            margin-bottom: 20px;
+        }
+
+        .card .highlight {
+            color: #e57373;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.8rem;
+            font-style: italic;
+            display: block;
+            margin-bottom: 15px;
+        }
+
+        .swipe-hint {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 0.75rem;
+            color: #666;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        /* --- ESCENA 3: IMAGEN FINAL CON TORTA --- */
+        #final-scene {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+            padding: 30px;
+            opacity: 0; 
+            visibility: hidden;
+            transition: opacity 2s ease;
+        }
+
+        #final-scene.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .cake-container {
+            position: relative;
+            width: 200px;
+            height: 180px;
+            margin-bottom: 40px;
+            transform: scale(0.5) translateY(50px);
+            opacity: 0;
+            transition: transform 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.5s, opacity 1s ease 0.5s;
+        }
+
+        #final-scene.show .cake-container {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
+
+        .plate {
+            width: 220px;
+            height: 10px;
+            background: #444;
+            border-radius: 50%;
+            position: absolute;
+            bottom: -5px;
+            left: -10px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.8);
+        }
+
+        .layer-bottom {
+            width: 180px;
+            height: 70px;
+            background: #1e1e28;
+            border: 2px solid #e57373;
+            border-bottom: none;
+            border-radius: 10px 10px 0 0;
+            position: absolute;
+            bottom: 0;
+            left: 10px;
+            box-shadow: inset 0 0 25px rgba(229, 115, 115, 0.15), 0 0 15px rgba(229, 115, 115, 0.2);
+        }
+
+        .layer-top {
+            width: 130px;
+            height: 60px;
+            background: #1e1e28;
+            border: 2px solid #ffb74d;
+            border-bottom: none;
+            border-radius: 10px 10px 0 0;
+            position: absolute;
+            bottom: 70px;
+            left: 35px;
+            box-shadow: inset 0 0 25px rgba(255, 183, 77, 0.15), 0 0 15px rgba(255, 183, 77, 0.2);
+        }
+
+        .cake-candles {
+            position: absolute;
+            bottom: 130px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .small-candle {
+            width: 6px;
+            height: 30px;
+            background: #fff;
+            border-radius: 3px;
+            position: relative;
+        }
+
+        .small-flame {
+            width: 10px;
+            height: 16px;
+            background: #ffeb3b;
+            border-radius: 50% 50% 20% 20%;
+            position: absolute;
+            top: -18px;
+            left: 3px;
+            box-shadow: 0 0 15px 5px rgba(255, 235, 59, 0.5);
+            animation: flicker 0.2s infinite alternate;
+        }
+
+        .final-text {
+            font-family: 'Montserrat', sans-serif;
+            color: #fff;
+            z-index: 2;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 1.5s ease 1.5s, transform 1.5s ease 1.5s;
+        }
+
+        #final-scene.show .final-text {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .final-text h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 3.2rem;
+            margin: 0 0 15px 0;
+            background: -webkit-linear-gradient(#e57373, #ffb74d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-style: italic;
+            font-weight: 600;
+            line-height: 1.1;
+        }
+
+        .final-text p {
+            font-size: 1.1rem;
+            color: #a0a0b5;
+            letter-spacing: 0.5px;
+            line-height: 1.6;
+            margin-top: 20px;
+        }
+
+        .sparkle {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 0 10px white;
+            animation: twinkle linear infinite;
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="audio-cassette" src="https://res.cloudinary.com/dwsom9yz2/video/upload/v1772968631/HappyBirthday_v35ihb.mp3" loop></audio>
+
+    <div id="candle-scene">
+        <p class="instruction">Toca la llama para pedir un deseo.</p>
+        <div class="candle-container" onclick="blowCandle()">
+            <div class="flame" id="flame"></div>
+            <div class="wick"></div>
+            <div class="candle-body"></div>
+            <div class="smoke" id="smoke"></div>
+        </div>
+    </div>
+
+    <div id="cards-scene">
+        <div class="card-stack" id="card-stack">
+            
+            <div class="card" onclick="swipeCard(this)">
+                <span class="highlight">Un pequeño recordatorio</span>
+                <p>Hola, espero que te encuentres muy bien, solo quiero pasarte a recordar que pases un muy buen feliz cumpleaños. Agradezco mucho la amistad que me brindaste y todo el apoyo recibido por tu parte, y como te decía, no sé cuándo podré agradecerte por todo ello.</p>
+                <div class="swipe-hint">Toca la carta para deslizar</div>
+            </div>
+
+            <div class="card" onclick="swipeCard(this)">
+                <span class="highlight">Lo reconozco...</span>
+                <p>Lamentablemente no puedo decir lo mismo de mí, ya que a veces decía estupideces que terminaban afectándote y entiendo el porqué de todo.</p>
+                <div class="swipe-hint">Toca para deslizar</div>
+            </div>
+
+            <div class="card" onclick="swipeCard(this)">
+                <span class="highlight">Eres admirable</span>
+                <p>Fuera de eso, en verdad eres una chica bastante admirable y fuerte, sigue logrando y cumpliendo tus metas como lo demuestras, y que nada te detenga porque si eso pasara, ¿qué sentido tendría lograr todo lo que has hecho? Eres superior al resto del entorno en el que estoy, y sabes, yo sí creo mucho en ti.</p>
+                <div class="swipe-hint">Toca para deslizar</div>
+            </div>
+
+            <div class="card" onclick="swipeCard(this)">
+                <span class="highlight">Falta muy poco</span>
+                <p>Sé que lo volverás a hacer muy bien, ya no te falta mucho por acabar la universidad, solo un poco más de esfuerzo y ya. ¡Ánimos! Tal vez no ahora, pero puedes contar con mi apoyo las veces que sea necesario, y yo encantado de ayudarte.</p>
+                <div class="swipe-hint">Toca para revelar</div>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="final-scene">
+        <div id="stars-container"></div>
+        
+        <div class="cake-container">
+            <div class="plate"></div>
+            <div class="layer-bottom"></div>
+            <div class="layer-top"></div>
+            <div class="cake-candles">
+                <div class="small-candle"><div class="small-flame"></div></div>
+                <div class="small-candle" style="top: -10px;"><div class="small-flame"></div></div>
+                <div class="small-candle"><div class="small-flame"></div></div>
+            </div>
+        </div>
+
+        <div class="final-text">
+            <h1>Feliz Cumpleaños,<br>Nayeli ^^</h1>
+            <p>Solo pasaba a recordarte lo maravillosa que eres.<br>Sin nada más que añadir... pásala increíble.</p>
+        </div>
+    </div>
+
+    <script>
+        function blowCandle() {
+            const flame = document.getElementById('flame');
+            const smoke = document.getElementById('smoke');
+            const candleScene = document.getElementById('candle-scene');
+            const cardsScene = document.getElementById('cards-scene');
+            
+            // Inicia la música de fondo
+            const audio = document.getElementById('audio-cassette');
+            audio.play().catch(error => console.log("La reproducción de audio fue bloqueada:", error));
+
+            flame.classList.add('blown-out');
+            smoke.classList.add('active');
+
+            setTimeout(() => {
+                candleScene.style.opacity = '0';
+                candleScene.style.visibility = 'hidden';
+                
+                cardsScene.style.visibility = 'visible';
+                cardsScene.style.opacity = '1';
+            }, 1500);
+        }
+
+        let cardsSwiped = 0;
+        const totalCards = 4;
+
+        function swipeCard(cardElement) {
+            cardElement.classList.add('swiped');
+            cardsSwiped++;
+
+            if (cardsSwiped === totalCards) {
+                setTimeout(() => {
+                    document.getElementById('cards-scene').style.opacity = '0';
+                    document.getElementById('cards-scene').style.visibility = 'hidden';
+                    
+                    const finalScene = document.getElementById('final-scene');
+                    finalScene.classList.add('show');
+                }, 600); 
+            }
+        }
+
+        function createStars() {
+            const container = document.getElementById('stars-container');
+            for (let i = 0; i < 60; i++) {
+                let star = document.createElement('div');
+                star.className = 'sparkle';
+                let size = Math.random() * 3 + 1;
+                star.style.width = size + 'px';
+                star.style.height = size + 'px';
+                star.style.left = Math.random() * 100 + 'vw';
+                star.style.top = Math.random() * 100 + 'vh';
+                star.style.animationDuration = (Math.random() * 2 + 1) + 's';
+                star.style.animationDelay = Math.random() * 2 + 's';
+                container.appendChild(star);
+            }
+        }
+        
+        createStars();
+    </script>
+</body>
+</html>
